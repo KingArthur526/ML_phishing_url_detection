@@ -11,7 +11,7 @@ import os
 from train import train_model, extract_features
 
 st.set_page_config(page_title="🎣 Phishing URL Detector", page_icon="🎣", layout="centered")
-
+pd.set_option("styler.render.max_elements", 2000000)
 st.title("🎣 Phishing URL Detector")
 st.caption("Upload a CSV of URLs — get back a labeled result: **Phishing** or **Legitimate**.")
 
@@ -108,9 +108,9 @@ if uploaded:
         color = "#ffe5e5" if "Phishing" in row["Result"] else "#e5ffe5"
         return [f"background-color: {color}"] * len(row)
 
-    st.dataframe(
-        pd.set_option("styler.render.max_elements", 1302382)
-    )
+styled_df = result_df.style.apply(highlight_row, axis=1)
+
+st.dataframe(styled_df, use_container_width=True)
 
     # ── Download Results ───────────────────────────────────────────────────
     st.divider()
