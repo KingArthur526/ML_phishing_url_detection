@@ -109,9 +109,7 @@ if uploaded:
         return [f"background-color: {color}"] * len(row)
 
     st.dataframe(
-        result_df.style.apply(highlight_row, axis=1),
-        use_container_width=True,
-        height=400,
+        pd.set_option("styler.render.max_elements", 1302382)
     )
 
     # ── Download Results ───────────────────────────────────────────────────
