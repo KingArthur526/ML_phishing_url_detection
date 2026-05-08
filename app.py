@@ -107,10 +107,8 @@ if uploaded:
     def highlight_row(row):
         color = "#ffe5e5" if "Phishing" in row["Result"] else "#e5ffe5"
         return [f"background-color: {color}"] * len(row)
-
-styled_df = result_df.style.apply(highlight_row, axis=1)
-
-st.dataframe(styled_df, use_container_width=True)
+    styled_df = result_df.style.apply(highlight_row, axis=1)
+    st.dataframe(styled_df, use_container_width=True)
 
     # ── Download Results ───────────────────────────────────────────────────
     st.divider()
