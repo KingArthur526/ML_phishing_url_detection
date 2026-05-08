@@ -84,31 +84,114 @@ if uploaded:
         predictions = clf.predict(features)
         labels = ["🚨 Phishing" if p == 1 else "✅ Legitimate" for p in predictions]
 
-    # ── Results ────────────────────────────────────────────────────────────
+        # ── Results ────────────────────────────────────────────────────────────
     st.divider()
-    st.subheader("📊 Results")
-
-    result_df = pd.DataFrame({
-        "URL": urls.values,
-        "Result": labels,
-    })
+    st.subheader("📊 Analysis Summary")
 
     phishing_count = sum(1 for l in labels if "Phishing" in l)
     legit_count = len(labels) - phishing_count
+    total = len(labels)
 
+    phishing_percent = (phishing_count / total) * 100
+    legit_percent = (legit_count / total) * 100
+
+    # ── Metrics ────────────────────────────────────────────────────────────
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total URLs", len(labels))
-    col2.metric("🚨 Phishing", phishing_count)
-    col3.metric("✅ Legitimate", legit_count)
+
+    col1.metric("Total URLs", total)
+    col2.metric("🚨 Phishing", f"{phishing_percent:.1f}%")
+    col3.metric("✅ Legitimate", f"{legit_percent:.1f}%")
 
     st.divider()
 
-    # Color-code the table
-    def highlight_row(row):
-        color = "#ffe5e5" if "Phishing" in row["Result"] else "#e5ffe5"
-        return [f"background-color: {color}"] * len(row)
-    styled_df = result_df.style.apply(highlight_row, axis=1)
-    st.dataframe(styled_df, use_container_width=True)
+    # ── Percentage Visualization ──────────────────────────────────────────
+    st.markdown("### 📈 URL Safety Distribution")
+
+    st.write(f"🚨 Phishing URLs: {phishing_count} / {total}")
+    st.progress(phishing_percent / 100)
+
+    st.write(f"✅ Legitimate URLs: {legit_count} / {total}")
+    st.progress(legit_percent / 100)
+
+    # ── Distribution Chart ────────────────────────────────────────────────
+    st.markdown("### 📊 Detection Overview")
+
+    chart_data = pd.DataFrame({
+        "Category": ["Phishing", "Legitimate"],
+        "Count": [phishing_count, legit_count]
+    })
+
+    st.bar_chart(chart_data.set_index("Category"))
+
+    # ── Example URLs ──────────────────────────────────────────────────────
+    st.markdown("### 🔍 Example URLs")
+
+    phishing_examples = [
+        urls.values[i]
+        for i, p in enumerate(predictions)
+        if p == 1
+    ]
+
+    legit_examples = [
+        urls.values[i]
+        for i, p in enumerate(predictions)
+        if p == 0
+    ]
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.error("🚨 Example Phishing URL")
+
+        if phishing_examples:
+            st.code(phishing_examples[0])
+        else:
+            st.write("No phishing URLs detected.")
+
+    with col2:
+        st.success("✅ Example Legitimate URL")
+
+        if legit_examples:
+            st.code(legit_examples[0])
+        else:
+            st.write("No legitimate URLs found.")
+
+    # ── Optional Preview Table ────────────────────────────────────────────
+    with st.expander("📄 Preview first 10 analyzed URLs"):
+        preview_df = pd.DataFrame({
+            "URL": urls.values,
+            "Result": labels,
+        })
+
+        st.dataframe(
+            preview_df.head(10),
+            use_container_width=True
+        )
+
+    # ── Download Results ───────────────────────────────────────────────────
+    st.divider()
+
+    clean_result = pd.DataFrame({
+        "URL": urls.values,
+        "Label": ["Phishing" if p == 1 else "Legitimate" for p in predictions],
+    })
+
+    st.download_button(
+        "⬇️ Download labeled CSV",
+        clean_result.to_csv(index=False),
+        file_name="phishing_results.csv",
+        mime="text/csv",
+    )
+
+    # ── Final Warning ─────────────────────────────────────────────────────
+    if phishing_count > 0:
+        st.warning(
+            f"⚠️ {phishing_count} suspicious URL(s) detected "
+            f"({phishing_percent:.1f}% of uploaded URLs). "
+            "Avoid visiting suspicious links."
+        )
+    else:
+        st.success("🎉 No phishing URLs detected!")
 
     # ── Download Results ───────────────────────────────────────────────────
     st.divider()
