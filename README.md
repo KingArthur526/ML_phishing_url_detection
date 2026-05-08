@@ -8,7 +8,7 @@ Upload a CSV of URLs → get back a labeled result: **Phishing** or **Legitimate
 pip install -r requirements.txt
 
 # Option A: train on the real dataset (recommended, best accuracy)
-python3 train.py --csv malicious_phish.csv
+python3 train.py --csv dataset_phishing.csv
 
 # Option B: run without a dataset (trains on built-in synthetic data, ~5 sec)
 streamlit run app.py
